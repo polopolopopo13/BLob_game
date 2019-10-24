@@ -2,6 +2,7 @@ import random
 import pygame
 import numpy as np
 import time
+from power_class import Flush
 
 class PnjBlob():
 	def __init__(self, color, x_boundary, y_boundary):
@@ -11,10 +12,10 @@ class PnjBlob():
 		self.y_boundary = y_boundary
 		self.x = random.randrange(0, self.x_boundary)
 		self.y = random.randrange(0, self.y_boundary)
-
-	def move(self):
 		self.move_x = random.randrange(-2, 3)
 		self.move_y = random.randrange(-2, 3)
+
+	def move(self):
 		self.x += self.move_x
 		self.y += self.move_y
 
@@ -56,25 +57,6 @@ class UserBlob():
 	def flush(self, screen, color, player_x, player_y, player_size):
 	#	self.size *= 0.75
 		self.power['{}'.format(time.time())] = Flush(screen, color, player_x, player_y, player_size)
-
-
-class Flush():
-	def __init__(self, screen, color, player_x, player_y, player_size):
-		self.size = 6
-		self.color = color
-		self.x = player_x
-		self.y = player_y
-		self.screen = screen
-		self.size = player_size
-		self.initial_size = player_size
-
-	def update(self):
-		self.size += 1
-	
-	def to_display(self, screen):
-		pygame.draw.circle(screen, self.color, (self.x, self.y), self.size, 2)
-
-
 
 class InBox():
 	def __init__(self, x, y , w, h, color, text):

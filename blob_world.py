@@ -1,6 +1,7 @@
 import pygame
 import random
-from blob_class import PnjBlob, UserBlob, InBox
+from blob_class import PnjBlob, UserBlob
+#Flush is imported in blob_class.py
 from interface_class import Button
 import numpy as np
 import time
@@ -57,21 +58,30 @@ def blob_touching(b1, b2):
 	# returning True or False
 	return np.linalg.norm(np.array([b1.x, b1.y])-np.array([b2.x, b2.y])) < (b1.size + b2.size)
 
+def vitesse_transfer(b1,b2):#imaginary
+	b1_vvit = np.sqrt(b1.move_x**2+b1.move_y**2)*0.5*b1.size
+	b2_vvit = np.sqrt(b2.move_x**2+b2.move_y**2)*0.5*b2.size
+	new_move_x = b1.move_x*(b1_vvit/(b1_vvit+b2_vvit)) + b2.move_x*(b2_vvit/(b1_vvit+b2_vvit))
+	new_move_y = b1.move_y*(b1_vvit/(b1_vvit+b2_vvit)) + b2.move_y*(b2_vvit/(b1_vvit+b2_vvit))
+	return int(new_move_x), int(new_move_y)
 
 def collision_pnj_blob(blob, other_blob):
+	#size also used as weight
 	new_color = ()
 	for c1, c2 in zip(blob.color, other_blob.color):
 		coeff_c1 = blob.size/(blob.size + other_blob.size)
 		coeff_c2 = other_blob.size/(blob.size + other_blob.size)
 		i = np.round((c1*coeff_c1 + c2*coeff_c2), 3)
 		new_color = new_color+(i,)
-	if blob.size >= other_blob.size:
+	if blob.size > other_blob.size:
 		blob.size += other_blob.size
 		blob.color = new_color
+		blob.move_x, blob.move_y = vitesse_transfer(blob, other_blob)
 		other_blob.size = 0
 	elif blob.size < other_blob.size:
 		other_blob.size += blob.size
 		other_blob.color = new_color
+		other_blob.move_x, other_blob.move_y = vitesse_transfer(blob, other_blob)
 		blob.size = 0
 	else:
 		pass
@@ -141,8 +151,7 @@ def displaying_units(player, blob_units):
 	for blob_id in blob_units:
 		blob = blob_units[blob_id]
 		pygame.draw.circle(screen, blob.color, [
-						   blob.x, blob.y], int(round(blob.size)))
-	
+						   blob.x, blob.y], int(round(blob.size)))	
 	for power_id, power in list(player.power.items()):#dict to list cause might be modified during iteration
 		power.update()
 		pygame.draw.circle(screen, power.color, (power.x, power.y), int(round(power.size)), 1)
@@ -269,8 +278,9 @@ while running:
 		player1.user_move(direction = 'move_up')
 	if user_pressing_down:
 		player1.user_move(direction = 'move_down')
-	player1.check_boundaries()
+	#Player and blob boundaries movement
 	
+	player1.check_boundaries()
 	for blob_id in blob_units:
 		blob_units[blob_id].move()
 		blob_units[blob_id].check_boundaries()
@@ -290,13 +300,15 @@ while running:
 		print('win')
 		pygame.quit()
 		quit()
+	'''
 	if player1.size >= size_decrease:
 		player1.size -= size_decrease
 	elif player1.size < size_decrease:
 		player1.alive = False
 	if not player1.alive:
 		game_over=True
-	
+	'''
+
 	#power_flush_contacts(player1, blob_units)
 	screen.fill(BLACK)
 	displaying_units(player1, blob_units)
