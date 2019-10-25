@@ -61,12 +61,18 @@ def blob_touching(b1, b2):
 def vitesse_transfer(b1,b2):#imaginary
 	b1_vvit = np.sqrt(b1.move_x**2+b1.move_y**2)*0.5*b1.size
 	b2_vvit = np.sqrt(b2.move_x**2+b2.move_y**2)*0.5*b2.size
+	#if b1_vvit==b2_vvit==0:
+	print('init:',b1.size, b2.size, b1.move_x, b1.move_y, b2.move_x, b2.move_y)
 	new_move_x = b1.move_x*(b1_vvit/(b1_vvit+b2_vvit)) + b2.move_x*(b2_vvit/(b1_vvit+b2_vvit))
 	new_move_y = b1.move_y*(b1_vvit/(b1_vvit+b2_vvit)) + b2.move_y*(b2_vvit/(b1_vvit+b2_vvit))
-	return int(new_move_x), int(new_move_y)
+	print('new:', new_move_x, new_move_y)
+	return (-1 if -1>new_move_x<0 else int(new_move_x) or 1 -1 if 0<new_move_x<1 else int(new_move_x),
+	-1 if -1>new_move_y<0 else int(new_move_y) or 1 -1 if 0<new_move_y<1 else int(new_move_y))
 
-def collision_pnj_blob(blob, other_blob):
+def collision_pnj_blob(blob_id, other_blob_id):
 	#size also used as weight
+	blob = blob_units[blob_id]
+	other_blob = blob_units[other_blob_id]
 	new_color = ()
 	for c1, c2 in zip(blob.color, other_blob.color):
 		coeff_c1 = blob.size/(blob.size + other_blob.size)
@@ -77,14 +83,12 @@ def collision_pnj_blob(blob, other_blob):
 		blob.size += other_blob.size
 		blob.color = new_color
 		blob.move_x, blob.move_y = vitesse_transfer(blob, other_blob)
-		other_blob.size = 0
+		del(blob_units[other_blob_id])
 	elif blob.size < other_blob.size:
 		other_blob.size += blob.size
 		other_blob.color = new_color
 		other_blob.move_x, other_blob.move_y = vitesse_transfer(blob, other_blob)
-		blob.size = 0
-	else:
-		pass
+		del(blob_units[blob_id])
 
 
 def handle_user_collisions(player_blob, blob_units):
@@ -106,16 +110,11 @@ def handle_pnj_collisions(blob_dict):
 				if blob_id == other_blob_id:
 					pass
 				else:
-					if blob_touching(blob, other_blob):
-						collision_pnj_blob(blob, other_blob)
-						if blob.size < other_blob.size:
-							del blob_dict[blob_id]
-
-						elif blob.size >= other_blob.size:
-							del blob_dict[other_blob_id]
-
-						else:
-							pass
+					if blob.size != other_blob.size: 
+						if blob_touching(blob, other_blob):
+							collision_pnj_blob(blob_id, other_blob_id)
+					else:
+						pass
 		except:
 			pass
 	return blob_dict
@@ -240,7 +239,7 @@ while running:
 	if game_over:
 		menu_gameover()
 		game_over=False
-		#RECREATE Fundamentals elements
+		#RECREATE Fundamental elements
 		player1 =  UserBlob(WHITE, WIDTH, HEIGHT, is_alive=True)
 
 		blob_units = dict()
@@ -259,7 +258,7 @@ while running:
 		user_pressing_up=bool()
 		user_pressing_down=bool()
 	
-	clock.tick(FPS)##keep loop runing at 40 FPS
+	clock.tick(FPS)##keep loop running at 40 FPS
 	
 	for event in pygame.event.get():
 		if event.type == pygame.QUIT:
