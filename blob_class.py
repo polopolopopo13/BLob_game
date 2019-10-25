@@ -12,8 +12,8 @@ class PnjBlob():
 		self.y_boundary = y_boundary
 		self.x = random.randrange(0, self.x_boundary)
 		self.y = random.randrange(0, self.y_boundary)
-		self.move_x = random.randrange(-2, 3)
-		self.move_y = random.randrange(-2, 3)
+		self.move_x = random.randrange(-4, 4)
+		self.move_y = random.randrange(-4, 4)
 
 	def move(self):
 		self.x += self.move_x

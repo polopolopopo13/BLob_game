@@ -1,3 +1,5 @@
+### NOTE THIS IS JUST FOR FUN AND KEEP DEVELOPPING SOME CODE
+
 import pygame
 import random
 from blob_class import PnjBlob, UserBlob
@@ -29,9 +31,9 @@ BLACK = (0, 0, 0)
 ORANGE = pygame.Color('sienna3')
 
 #Iterators
-STARTING_BLUE_BLOBS = 20
-STARTING_RED_BLOBS = 20
-STARTING_GREEN_BLOBS = 20
+STARTING_BLUE_BLOBS = 10
+STARTING_RED_BLOBS = 10
+STARTING_GREEN_BLOBS = 10
 
 #Standards
 size_decrease = 0.04
@@ -61,11 +63,8 @@ def blob_touching(b1, b2):
 def vitesse_transfer(b1,b2):#imaginary
 	b1_vvit = np.sqrt(b1.move_x**2+b1.move_y**2)*0.5*b1.size
 	b2_vvit = np.sqrt(b2.move_x**2+b2.move_y**2)*0.5*b2.size
-	#if b1_vvit==b2_vvit==0:
-	print('init:',b1.size, b2.size, b1.move_x, b1.move_y, b2.move_x, b2.move_y)
 	new_move_x = b1.move_x*(b1_vvit/(b1_vvit+b2_vvit)) + b2.move_x*(b2_vvit/(b1_vvit+b2_vvit))
 	new_move_y = b1.move_y*(b1_vvit/(b1_vvit+b2_vvit)) + b2.move_y*(b2_vvit/(b1_vvit+b2_vvit))
-	print('new:', new_move_x, new_move_y)
 	return (-1 if -1>new_move_x<0 else int(new_move_x) or 1 -1 if 0<new_move_x<1 else int(new_move_x),
 	-1 if -1>new_move_y<0 else int(new_move_y) or 1 -1 if 0<new_move_y<1 else int(new_move_y))
 
@@ -173,7 +172,7 @@ def menu_start():
 	logoRect = logoImage.get_rect()
 	draw_text(screen, "Welcome in Blobs World" , 64, WIDTH/2, HEIGHT/4, color=ORANGE)
 	line_return=0
-	for line in ["To clean level eat each blob.", "If a blob bigger than you is eatent, you loose.", 
+	for line in ["To clean level eat each blob.", "If a blob bigger than you is eaten, you loose.", 
 	"Arrows keys to move, space to use flush power."]:
 		line_return +=25
 		draw_text(screen, line, 30, WIDTH/2, (HEIGHT/2)+line_return)
@@ -192,7 +191,9 @@ def menu_start():
 
 def menu_gameover():
 	gameoverImage = pygame.image.load("images/game_over.jpg").convert()
+	gameoverImage = pygame.transform.scale(gameoverImage, (200,200))
 	gameoverRect = gameoverImage.get_rect()
+	gameoverRect.center = (WIDTH/2,HEIGHT/2)
 	draw_text(screen, "YOU LOOSE" , 64, WIDTH/2, HEIGHT/4, color=(135, 178, 204))
 	draw_text(screen, "Press a key to try again", 24, WIDTH/2, HEIGHT*3/4, color=WHITE)
 	screen.blit(gameoverImage,gameoverRect)
@@ -206,6 +207,9 @@ def menu_gameover():
 				quit()
 			if event.type == pygame.KEYDOWN:
 				waiting = False
+
+def menu_win():
+	''''''
 
 #CREATE Player and Pnjs
 player1 =  UserBlob(WHITE, WIDTH, HEIGHT, is_alive=True)
@@ -299,14 +303,13 @@ while running:
 		print('win')
 		pygame.quit()
 		quit()
-	'''
+	
 	if player1.size >= size_decrease:
 		player1.size -= size_decrease
 	elif player1.size < size_decrease:
 		player1.alive = False
 	if not player1.alive:
 		game_over=True
-	'''
 
 	#power_flush_contacts(player1, blob_units)
 	screen.fill(BLACK)
