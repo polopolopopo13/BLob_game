@@ -2,7 +2,6 @@ import random
 import pygame
 import numpy as np
 import time
-from power_class import Flush
 
 class PnjBlob():
 	def __init__(self, color, x_boundary, y_boundary):
@@ -76,10 +75,6 @@ class UserBlob():
 
 		if self.y < 0: self.y = self.y_boundary
 		elif self.y > self.y_boundary: self.y = 0
-
-	def flush(self, screen, color, player_x, player_y, player_size):
-	#	self.size *= 0.75
-		self.power['{}'.format(time.time())] = Flush(screen, color, player_x, player_y, player_size)
 
 
 

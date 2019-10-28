@@ -3,7 +3,7 @@
 import pygame
 import random
 from blob_class import PnjBlob, UserBlob, VoidHole
-#Flush is imported in blob_class.py
+from power_class import RedFlush, WhiteFlush, GreenFlush, BlueFlush
 from interface_class import Menus, Text
 
 import numpy as np
@@ -25,16 +25,16 @@ clock = pygame.time.Clock()
 
 #Colors
 WHITE = (255, 255, 255)
-BLUE = (0, 0, 255)
-RED = (255, 0, 0)
+RED = (0, 0, 255)
+BLUE = (255, 0, 0)
 GREEN = (0, 255, 0)
 BLACK = (0, 0, 0)
 ORANGE = pygame.Color('sienna3')
 
 #Iterators
-STARTING_BLUE_BLOBS = 10
-STARTING_RED_BLOBS = 10
-STARTING_GREEN_BLOBS = 10
+STARTING_BLUE_BLOBS = 5
+STARTING_RED_BLOBS = 5
+STARTING_GREEN_BLOBS = 5
 
 #Standards
 size_decrease = 0
@@ -45,20 +45,34 @@ def power_flush_contacts(player, blob_units):
 	power_units = player.power
 	for power_id, power in list(power_units.items()):#usefull when multi types power launched
 		for blob_id, blob in list(blob_units.items()):
-			if power_hit(power, blob):
-				player.size += blob.size/2
-				blob.size /= 2
-			if blob.size <=1:
-				del blob_units[blob_id]
+			if power_hit(power, blob, blob_id):
+				#gonna create a new tuple for blob color to handle power effet...
+				#if power and blob dominant color are same (Red, Blue or RED): blob is absorbed else, blob is pushed bash
+				if power.color in [BLUE, GREEN, RED]:
+					p_colormax_idx = max(power.color)#pb, it will return first max index occurence...
+					p_idx = [i for i, j in enumerate(power.color) if j == p_colormax_idx]
+					bl_colormax_idx = max(blob.color)#IDEM
+					bl_idx = [k for k, l in enumerate(blob.color) if l == bl_colormax_idx]
+					comon_idx = [m for m in bl_idx and p_idx] 
+					if comon_idx:
+						new_color = [0,0,0]
+						for a in range(2):
+							if a in p_idx and a in bl_idx:
+								new_color[a]=0
+							else:
+								new_color[a]=blob.color[a]
+						blob.color = tuple(new_color)
 
 
-def power_hit(power, unit_collapsed):
-	# returning True if collapsed or False
-	return np.linalg.norm(np.array([power.x, power.y])-np.array([unit_collapsed.x, unit_collapsed.y])) < (power.size + unit_collapsed.size) 
-	#need find something not to multi hit each blob in 1 cast power
+def power_hit(power, unit_collapsed, unit_collapsed_id):
+	if np.linalg.norm(np.array([power.x, power.y])-np.array([unit_collapsed.x, unit_collapsed.y])) < (power.size + unit_collapsed.size):
+		if unit_collapsed_id in power.blob_touched:
+			return False
+		else:
+			power.blob_touched.append(unit_collapsed_id)
+			return True
 
 def blob_touching(b1, b2):
-	# returning True or False
 	return np.linalg.norm(np.array([b1.x, b1.y])-np.array([b2.x, b2.y])) < (b1.size + b2.size)
 
 def vitesse_transfer(b1,b2):#imaginary
@@ -130,8 +144,7 @@ def handle_keyboard(event):
 			user_pressing_up = True
 		elif event.key == pygame.K_DOWN:
 			user_pressing_down = True
-		'''elif event.key == pygame.K_ESCAPE:
-			game_pause()'''
+
 
 	elif event.type == pygame.KEYUP:
 		if event.key == pygame.K_LEFT:
@@ -142,8 +155,7 @@ def handle_keyboard(event):
 			user_pressing_up = False
 		elif event.key == pygame.K_DOWN:
 			user_pressing_down = False
-		'''elif event.key == pygame.K_ESCAPE:
-			pressed_pause = False'''
+
 	#return user_pressing_left, press_right, press_down, press_up
 
 def displaying_units(player, blob_units, void_units, _whity_units):
@@ -159,10 +171,11 @@ def displaying_units(player, blob_units, void_units, _whity_units):
 
 	for power_id, power in list(player.power.items()):#dict to list cause might be modified during iteration
 		power.update()
-		pygame.draw.circle(screen, power.color, (power.x, power.y), int(round(power.size)), 1)
 		power_flush_contacts(player, blob_units)
+		pygame.draw.circle(screen, power.color, (power.x, power.y), int(round(power.size)), 1)
 		if power.size >= power.initial_size*2 and power.size >= 50:
 			del player.power[power_id]
+	
 	for _whity_id, _whity in list(_whity_units.items()):
 		pygame.draw.circle(screen, _whity.color, (_whity.x, _whity.y), int(round(_whity.size)), 1)
 
@@ -182,8 +195,7 @@ def menu_start():
 	logoRect = logoImage.get_rect()
 	draw_text(screen, "Welcome in Blobs World" , 64, WIDTH/2, HEIGHT/4, color=ORANGE)
 	line_return=0
-	for line in ["To clean level eat each blob.", "If a blob bigger than you is eaten, you loose.", 
-	"Arrows keys to move, space to use flush power."]:
+	for line in ["WORLD CODING STILL IN PROGRESS"]:
 		line_return +=25
 		draw_text(screen, line, 30, WIDTH/2, (HEIGHT/2)+line_return)
 	draw_text(screen, "Press a key to begin", 24, WIDTH/2, HEIGHT*3/4, color=GREEN)
@@ -220,12 +232,11 @@ def create_characs():
 	for i in range(STARTING_GREEN_BLOBS):
 		blob_units['green{}'.format(i)] = PnjBlob(GREEN, WIDTH, HEIGHT)
 
+	power_units = dict()
+	_whity_units = dict()
 	mainloop_count = 0
-	return player1, blob_units, void_units, mainloop_count
+	return player1, blob_units, void_units, mainloop_count, power_units, _whity_units
 
-
-power_units = dict()
-_whity_units = dict()
 
 user_pressing_left=bool()
 user_pressing_right=bool()
@@ -237,7 +248,7 @@ game_over = False
 start = True
 running = True
 
-player1, blob_units, void_units, mainloop_count = create_characs()
+player1, blob_units, void_units, mainloop_count, power_units, _whity_units = create_characs()
 while running:
 	if start:
 		menu_start()
@@ -247,7 +258,7 @@ while running:
 		menu.gameover(WIDTH, HEIGHT)
 		game_over=False
 		#RECREATE Fundamental elements
-		player1, blob_units, void_units, start_time, mainloop_count = create_characs()
+		player1, blob_units, void_units, mainloop_count, power_units, _whity_units = create_characs()
 		power_units = dict()
 		_whity_units = dict()
 
@@ -263,7 +274,9 @@ while running:
 			running = False
 		elif event.type == pygame.KEYUP:
 			if event.key == pygame.K_SPACE:
-				player1.flush(screen, player1.color, player1.x, player1.y, player1.size)
+				player1.power[f'flushwhite_{time.time()}'] = WhiteFlush(screen, player1.x, player1.y, player1.size)
+			elif event.key == pygame.K_p:
+				player1.power[f'flushred_{time.time()}'] = RedFlush(screen, player1.x, player1.y, player1.size)
 			else: handle_keyboard(event)
 		elif event.type == pygame.KEYDOWN: handle_keyboard(event)
 
@@ -286,8 +299,7 @@ while running:
 		void_units[void_id].check_boundaries()
 
 	#whity blobs
-	if mainloop_count % 30 == 0:
-		print('30 loops')
+	if mainloop_count % 30 == 0 and len(_whity_units)<=10:
 		for void_id, void in list(void_units.items()):
 			_whity_units['whity_{}_{}'.format(void, mainloop_count)] = void.creating(WIDTH,HEIGHT)
 	if _whity_units:
