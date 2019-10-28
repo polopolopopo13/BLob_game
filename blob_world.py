@@ -4,7 +4,8 @@ import pygame
 import random
 from blob_class import PnjBlob, UserBlob
 #Flush is imported in blob_class.py
-from interface_class import Button
+from interface_class import Menus, Text
+
 import numpy as np
 import time
 
@@ -36,7 +37,7 @@ STARTING_RED_BLOBS = 10
 STARTING_GREEN_BLOBS = 10
 
 #Standards
-size_decrease = 0.04
+size_decrease = 0.4
 FPS = 40
 
 
@@ -189,24 +190,6 @@ def menu_start():
 			if event.type == pygame.KEYDOWN:
 				waiting = False
 
-def menu_gameover():
-	gameoverImage = pygame.image.load("images/game_over.jpg").convert()
-	gameoverImage = pygame.transform.scale(gameoverImage, (200,200))
-	gameoverRect = gameoverImage.get_rect()
-	gameoverRect.center = (WIDTH/2,HEIGHT/2)
-	draw_text(screen, "YOU LOOSE" , 64, WIDTH/2, HEIGHT/4, color=(135, 178, 204))
-	draw_text(screen, "Press a key to try again", 24, WIDTH/2, HEIGHT*3/4, color=WHITE)
-	screen.blit(gameoverImage,gameoverRect)
-	pygame.display.flip()
-	waiting = True
-	while waiting:
-		clock.tick(FPS)
-		for event in pygame.event.get():
-			if event.type == pygame.QUIT:
-				pygame.quit()
-				quit()
-			if event.type == pygame.KEYDOWN:
-				waiting = False
 
 def menu_win():
 	''''''
@@ -241,7 +224,8 @@ while running:
 		menu_start()
 		start=False
 	if game_over:
-		menu_gameover()
+		menu = Menus(screen, WIDTH, HEIGHT)
+		menu.gameover(WIDTH, HEIGHT)
 		game_over=False
 		#RECREATE Fundamental elements
 		player1 =  UserBlob(WHITE, WIDTH, HEIGHT, is_alive=True)
