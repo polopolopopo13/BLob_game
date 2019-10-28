@@ -26,6 +26,19 @@ class PnjBlob():
 		if self.y < 0: self.y = self.y_boundary
 		elif self.y > self.y_boundary: self.y = 0
 
+#class VoidHole():
+class VoidHole(PnjBlob):
+	def __init__(self, color, x_boundary, y_boundary):
+		self.size = 11
+		self.color = color
+		self.x_boundary = x_boundary
+		self.y_boundary = y_boundary
+		self.x = random.randrange(0, self.x_boundary)
+		self.y = random.randrange(0, self.y_boundary)
+		self.move_x = random.randrange(-2, 2)
+		self.move_y = random.randrange(-2, 2)
+
+
 class UserBlob():
 	def __init__(self, color, x_boundary, y_boundary, is_alive):
 		self.size = 8
@@ -57,6 +70,8 @@ class UserBlob():
 	def flush(self, screen, color, player_x, player_y, player_size):
 	#	self.size *= 0.75
 		self.power['{}'.format(time.time())] = Flush(screen, color, player_x, player_y, player_size)
+
+
 
 class InBox():
 	def __init__(self, x, y , w, h, color, text):

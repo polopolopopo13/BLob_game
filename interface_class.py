@@ -10,10 +10,10 @@ BLACK = (0, 0, 0)
 ORANGE = pygame.Color('sienna3')
 clock = pygame.time.Clock()
 class Menus():
-	'''lists of dicts with image, size and position to fill
-	images must be centralised in a directory named "images" in the project
-	list of dicts with text must have text, size, x, y and color)'''
 	def __init__(self, screen, screen_width, screen_height):
+		'''
+		screen : screen to display on # will pbly be updated to handle mutlticreen?
+		'''
 		self.screen = screen
 		self.screen_width = screen_width
 		self.screen_height = screen_height

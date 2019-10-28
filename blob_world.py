@@ -2,7 +2,7 @@
 
 import pygame
 import random
-from blob_class import PnjBlob, UserBlob
+from blob_class import PnjBlob, UserBlob, VoidHole
 #Flush is imported in blob_class.py
 from interface_class import Menus, Text
 
@@ -37,7 +37,7 @@ STARTING_RED_BLOBS = 10
 STARTING_GREEN_BLOBS = 10
 
 #Standards
-size_decrease = 0.4
+size_decrease = 0
 FPS = 40
 
 
@@ -146,11 +146,17 @@ def handle_keyboard(event):
 			pressed_pause = False'''
 	#return user_pressing_left, press_right, press_down, press_up
 
-def displaying_units(player, blob_units):
+def displaying_units(player, blob_units, void_units):
 	for blob_id in blob_units:
 		blob = blob_units[blob_id]
 		pygame.draw.circle(screen, blob.color, [
-						   blob.x, blob.y], int(round(blob.size)))	
+						   blob.x, blob.y], int(round(blob.size)))
+
+	for void_id in void_units:
+		void = void_units[void_id]
+		pygame.draw.circle(screen, void.color, [
+						   void.x, void.y], int(round(void.size)))
+
 	for power_id, power in list(player.power.items()):#dict to list cause might be modified during iteration
 		power.update()
 		pygame.draw.circle(screen, power.color, (power.x, power.y), int(round(power.size)), 1)
@@ -195,17 +201,23 @@ def menu_win():
 	''''''
 
 #CREATE Player and Pnjs
-player1 =  UserBlob(WHITE, WIDTH, HEIGHT, is_alive=True)
 
-blob_units = dict()
-for i in range(STARTING_RED_BLOBS):
-	blob_units['red{}'.format(i)] = PnjBlob(RED, WIDTH, HEIGHT)
+def create_characs():
+	player1 =  UserBlob(WHITE, WIDTH, HEIGHT, is_alive=True)
+	void_units = dict()
+	void_units['void1'] = VoidHole((255,255,0), WIDTH, HEIGHT)
 
-for i in range(STARTING_BLUE_BLOBS):
-	blob_units['blue{}'.format(i)] = PnjBlob(BLUE,WIDTH, HEIGHT)
+	blob_units = dict()
+	for i in range(STARTING_RED_BLOBS):
+		blob_units['red{}'.format(i)] = PnjBlob(RED, WIDTH, HEIGHT)
 
-for i in range(STARTING_GREEN_BLOBS):
-	blob_units['green{}'.format(i)] = PnjBlob(GREEN, WIDTH, HEIGHT)
+	for i in range(STARTING_BLUE_BLOBS):
+		blob_units['blue{}'.format(i)] = PnjBlob(BLUE,WIDTH, HEIGHT)
+
+	for i in range(STARTING_GREEN_BLOBS):
+		blob_units['green{}'.format(i)] = PnjBlob(GREEN, WIDTH, HEIGHT)
+	return player1, blob_units, void_units
+
 
 power_units = dict()
 
@@ -219,6 +231,7 @@ game_over = False
 start = True
 running = True
 
+player1, blob_units, void_units = create_characs()
 while running:
 	if start:
 		menu_start()
@@ -228,18 +241,7 @@ while running:
 		menu.gameover(WIDTH, HEIGHT)
 		game_over=False
 		#RECREATE Fundamental elements
-		player1 =  UserBlob(WHITE, WIDTH, HEIGHT, is_alive=True)
-
-		blob_units = dict()
-		for i in range(STARTING_RED_BLOBS):
-			blob_units['red{}'.format(i)] = PnjBlob(RED, WIDTH, HEIGHT)
-
-		for i in range(STARTING_BLUE_BLOBS):
-			blob_units['blue{}'.format(i)] = PnjBlob(BLUE,WIDTH, HEIGHT)
-
-		for i in range(STARTING_GREEN_BLOBS):
-			blob_units['green{}'.format(i)] = PnjBlob(GREEN, WIDTH, HEIGHT)
-
+		player1, blob_units, void_units = create_characs()
 		power_units = dict()
 		user_pressing_left=bool()
 		user_pressing_right=bool()
@@ -271,14 +273,9 @@ while running:
 	for blob_id in blob_units:
 		blob_units[blob_id].move()
 		blob_units[blob_id].check_boundaries()
-
-	'''for power_id, power in list(player1.power.items()):#dict
-		player1.power[power_id].update()
-		pygame.draw.circle(screen, power.color, (power.x, power.y), int(round(power.size)), 1)
-		
-		if player1.power[power_id].size >= power.initial_size*2 and player1.power[power_id].size >= 100:
-			del player1.power[power_id]
-		pygame.display.update()'''
+	for void_id in void_units:
+		void_units[void_id].move()
+		void_units[void_id].check_boundaries()
 	
 	##collisions
 	blob_units = handle_pnj_collisions(blob_units)
@@ -297,6 +294,6 @@ while running:
 
 	#power_flush_contacts(player1, blob_units)
 	screen.fill(BLACK)
-	displaying_units(player1, blob_units)
+	displaying_units(player1, blob_units, void_units)
 	
 	pygame.display.update()
