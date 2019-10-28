@@ -146,7 +146,7 @@ def handle_keyboard(event):
 			pressed_pause = False'''
 	#return user_pressing_left, press_right, press_down, press_up
 
-def displaying_units(player, blob_units, void_units):
+def displaying_units(player, blob_units, void_units, _whity_units):
 	for blob_id in blob_units:
 		blob = blob_units[blob_id]
 		pygame.draw.circle(screen, blob.color, [
@@ -163,6 +163,9 @@ def displaying_units(player, blob_units, void_units):
 		power_flush_contacts(player, blob_units)
 		if power.size >= power.initial_size*2 and power.size >= 50:
 			del player.power[power_id]
+	for _whity_id, _whity in list(_whity_units.items()):
+		pygame.draw.circle(screen, _whity.color, (_whity.x, _whity.y), int(round(_whity.size)), 1)
+
 	pygame.draw.circle(screen, player.color, [
 					   player.x, player.y], int(round(player.size)))
 
@@ -216,10 +219,13 @@ def create_characs():
 
 	for i in range(STARTING_GREEN_BLOBS):
 		blob_units['green{}'.format(i)] = PnjBlob(GREEN, WIDTH, HEIGHT)
-	return player1, blob_units, void_units
+
+	mainloop_count = 0
+	return player1, blob_units, void_units, mainloop_count
 
 
 power_units = dict()
+_whity_units = dict()
 
 user_pressing_left=bool()
 user_pressing_right=bool()
@@ -231,7 +237,7 @@ game_over = False
 start = True
 running = True
 
-player1, blob_units, void_units = create_characs()
+player1, blob_units, void_units, mainloop_count = create_characs()
 while running:
 	if start:
 		menu_start()
@@ -241,8 +247,10 @@ while running:
 		menu.gameover(WIDTH, HEIGHT)
 		game_over=False
 		#RECREATE Fundamental elements
-		player1, blob_units, void_units = create_characs()
+		player1, blob_units, void_units, start_time, mainloop_count = create_characs()
 		power_units = dict()
+		_whity_units = dict()
+
 		user_pressing_left=bool()
 		user_pressing_right=bool()
 		user_pressing_up=bool()
@@ -267,8 +275,8 @@ while running:
 		player1.user_move(direction = 'move_up')
 	if user_pressing_down:
 		player1.user_move(direction = 'move_down')
-	#Player and blob boundaries movement
 	
+	#Player and blob boundaries movement
 	player1.check_boundaries()
 	for blob_id in blob_units:
 		blob_units[blob_id].move()
@@ -276,7 +284,17 @@ while running:
 	for void_id in void_units:
 		void_units[void_id].move()
 		void_units[void_id].check_boundaries()
-	
+
+	#whity blobs
+	if mainloop_count % 30 == 0:
+		print('30 loops')
+		for void_id, void in list(void_units.items()):
+			_whity_units['whity_{}_{}'.format(void, mainloop_count)] = void.creating(WIDTH,HEIGHT)
+	if _whity_units:
+		for _whity_id, _whity in list(_whity_units.items()):
+			_whity.move()
+			_whity.check_boundaries()
+
 	##collisions
 	blob_units = handle_pnj_collisions(blob_units)
 	player1, blob_units = handle_user_collisions(player1, blob_units)
@@ -294,6 +312,6 @@ while running:
 
 	#power_flush_contacts(player1, blob_units)
 	screen.fill(BLACK)
-	displaying_units(player1, blob_units, void_units)
-	
+	displaying_units(player1, blob_units, void_units, _whity_units)
+	mainloop_count += 1	
 	pygame.display.update()

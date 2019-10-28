@@ -38,6 +38,16 @@ class VoidHole(PnjBlob):
 		self.move_x = random.randrange(-2, 2)
 		self.move_y = random.randrange(-2, 2)
 
+	def creating(self, x_boundary, y_boundary):
+		self.size *= 0.95
+		_whithy = PnjBlob((255,255,255), x_boundary, y_boundary)
+		_whithy.size = 3
+		_whithy.x = self.x
+		_whithy.y = self.y
+		return _whithy
+
+	def absorbing(self):
+		self.size *= 1.1
 
 class UserBlob():
 	def __init__(self, color, x_boundary, y_boundary, is_alive):
