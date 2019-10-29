@@ -13,10 +13,11 @@ class PnjBlob():
 		self.y = random.randrange(0, self.y_boundary)
 		self.move_x = random.randrange(-4, 4)
 		self.move_y = random.randrange(-4, 4)
+		self.speed = 1
 
 	def move(self):
-		self.x += self.move_x
-		self.y += self.move_y
+		self.x += int(self.move_x * self.speed)
+		self.y += int(self.move_y * self.speed)
 
 	def check_boundaries(self):
 		if self.x < 0: self.x = self.x_boundary
@@ -36,6 +37,7 @@ class VoidHole(PnjBlob):
 		self.y = random.randrange(0, self.y_boundary)
 		self.move_x = random.randrange(-2, 2)
 		self.move_y = random.randrange(-2, 2)
+		self.speed = 1
 
 	def creating(self, x_boundary, y_boundary):
 		self.size *= 0.95

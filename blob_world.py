@@ -25,8 +25,8 @@ clock = pygame.time.Clock()
 
 #Colors
 WHITE = (255, 255, 255)
-RED = (0, 0, 255)
-BLUE = (255, 0, 0)
+BLUE = (0, 0, 255)
+RED = (255, 0, 0)
 GREEN = (0, 255, 0)
 BLACK = (0, 0, 0)
 ORANGE = pygame.Color('sienna3')
@@ -46,26 +46,21 @@ def power_flush_contacts(player, blob_units):
 	for power_id, power in list(power_units.items()):#usefull when multi types power launched
 		for blob_id, blob in list(blob_units.items()):
 			if power_hit(power, blob, blob_id):
-				#gonna create a new tuple for blob color to handle power effet...
-				#if power and blob dominant color are same (Red, Blue or RED): blob is absorbed else, blob is pushed bash
 				if power.color in [BLUE, GREEN, RED]:
-					p_colormax_idx = max(power.color)#pb, it will return first max index occurence...
-					p_idx = [i for i, j in enumerate(power.color) if j == p_colormax_idx]
-					bl_colormax_idx = max(blob.color)#IDEM
-					bl_idx = [k for k, l in enumerate(blob.color) if l == bl_colormax_idx]
-					comon_idx = [m for m in bl_idx and p_idx] 
-					if comon_idx:
-						new_color = [0,0,0]
-						for a in range(2):
-							if a in p_idx and a in bl_idx:
-								new_color[a]=0
-							else:
-								new_color[a]=blob.color[a]
-						blob.color = tuple(new_color)
+					idx_p = power.color.index(255)
+					new_color = list(blob.color)
+					if new_color[idx_p]==255:
+						blob.move_x = -blob.move_x
+						blob.move_y = -blob.move_y
+					else: new_color[idx_p]=255
+					blob.color = tuple(new_color)
+				elif power.color == WHITE:
+					print('r')
 
 
 def power_hit(power, unit_collapsed, unit_collapsed_id):
-	if np.linalg.norm(np.array([power.x, power.y])-np.array([unit_collapsed.x, unit_collapsed.y])) < (power.size + unit_collapsed.size):
+	#if distance between the 2 center is == to radius sum
+	if np.sqrt((power.x-unit_collapsed.x)**2+(power.y-unit_collapsed.y)**2) <= (power.size+unit_collapsed.size):
 		if unit_collapsed_id in power.blob_touched:
 			return False
 		else:
@@ -322,7 +317,6 @@ while running:
 	if not player1.alive:
 		game_over=True
 
-	#power_flush_contacts(player1, blob_units)
 	screen.fill(BLACK)
 	displaying_units(player1, blob_units, void_units, _whity_units)
 	mainloop_count += 1	
