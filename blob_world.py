@@ -177,38 +177,6 @@ def displaying_units(player, blob_units, void_units, _whity_units):
 	pygame.draw.circle(screen, player.color, [
 					   player.x, player.y], int(round(player.size)))
 
-def draw_text(surface, text, size, x, y, color=WHITE):
-    font_name = pygame.font.match_font('linux bolunium')
-    font = pygame.font.Font(font_name, size)
-    text_surface = font.render(text, True, color)
-    text_rect = text_surface.get_rect()
-    text_rect.midtop = (x, y)
-    screen.blit(text_surface, text_rect)
-
-def menu_start():
-	logoImage = pygame.image.load("images/logo_PaPi.xcf").convert()
-	logoRect = logoImage.get_rect()
-	draw_text(screen, "Welcome in Blobs World" , 64, WIDTH/2, HEIGHT/4, color=ORANGE)
-	line_return=0
-	for line in ["WORLD CODING STILL IN PROGRESS"]:
-		line_return +=25
-		draw_text(screen, line, 30, WIDTH/2, (HEIGHT/2)+line_return)
-	draw_text(screen, "Press a key to begin", 24, WIDTH/2, HEIGHT*3/4, color=GREEN)
-	screen.blit(logoImage,logoRect)
-	pygame.display.flip()
-	waiting = True
-	while waiting:
-		clock.tick(FPS)
-		for event in pygame.event.get():
-			if event.type == pygame.QUIT:
-				pygame.quit()
-				quit()
-			if event.type == pygame.KEYDOWN:
-				waiting = False
-
-
-def menu_win():
-	''''''
 
 #CREATE Player and Pnjs
 
@@ -246,7 +214,8 @@ running = True
 player1, blob_units, void_units, mainloop_count, power_units, _whity_units = create_characs()
 while running:
 	if start:
-		menu_start()
+		menu = Menus(screen, WIDTH, HEIGHT)
+		menu.intro(WIDTH, HEIGHT)
 		start=False
 	if game_over:
 		menu = Menus(screen, WIDTH, HEIGHT)
@@ -270,8 +239,12 @@ while running:
 		elif event.type == pygame.KEYUP:
 			if event.key == pygame.K_SPACE:
 				player1.power[f'flushwhite_{time.time()}'] = WhiteFlush(screen, player1.x, player1.y, player1.size)
-			elif event.key == pygame.K_p:
+			elif event.key == pygame.K_v:
 				player1.power[f'flushred_{time.time()}'] = RedFlush(screen, player1.x, player1.y, player1.size)
+			elif event.key == pygame.K_b:
+				player1.power[f'flushgreen_{time.time()}'] = GreenFlush(screen, player1.x, player1.y, player1.size)
+			elif event.key == pygame.K_n:
+				player1.power[f'flushblue_{time.time()}'] = BlueFlush(screen, player1.x, player1.y, player1.size)
 			else: handle_keyboard(event)
 		elif event.type == pygame.KEYDOWN: handle_keyboard(event)
 
@@ -294,7 +267,7 @@ while running:
 		void_units[void_id].check_boundaries()
 
 	#whity blobs
-	if mainloop_count % 30 == 0 and len(_whity_units)<=10:
+	if mainloop_count % 100 == 0 and len(_whity_units)<=10:
 		for void_id, void in list(void_units.items()):
 			_whity_units['whity_{}_{}'.format(void, mainloop_count)] = void.creating(WIDTH,HEIGHT)
 	if _whity_units:
@@ -306,9 +279,8 @@ while running:
 	blob_units = handle_pnj_collisions(blob_units)
 	player1, blob_units = handle_user_collisions(player1, blob_units)
 	if not blob_units:
-		print('win')
-		pygame.quit()
-		quit()
+		menu = Menus(screen, WIDTH, HEIGHT)
+		menu.win_menu(WIDTH, HEIGHT)
 	
 	if player1.size >= size_decrease:
 		player1.size -= size_decrease

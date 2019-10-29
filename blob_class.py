@@ -35,9 +35,9 @@ class VoidHole(PnjBlob):
 		self.y_boundary = y_boundary
 		self.x = random.randrange(0, self.x_boundary)
 		self.y = random.randrange(0, self.y_boundary)
-		self.move_x = random.randrange(-2, 2)
-		self.move_y = random.randrange(-2, 2)
-		self.speed = 1
+		self.move_x = 0
+		self.move_y = 0
+		self.dist_gravit = self.size*15
 
 	def creating(self, x_boundary, y_boundary):
 		self.size *= 0.95
@@ -47,8 +47,14 @@ class VoidHole(PnjBlob):
 		_whithy.y = self.y
 		return _whithy
 
-	def absorbing(self):
-		self.size *= 1.1
+	'''def absorbing(self):
+		self.size *= 1.1'''
+	
+	def gravit_void_area(self, obj):
+		dist = np.sqrt((self.x-obj.x)**2+(self.y-obj.y)**2)
+		area = self.size+obj.size
+		if dist <= area:
+			pass#create an attractiv vector
 
 class UserBlob():
 	def __init__(self, color, x_boundary, y_boundary, is_alive):

@@ -38,6 +38,44 @@ class Menus():
 				if event.type == pygame.KEYDOWN:
 					waiting = False
 
+	def win_menu(self, screen_width, screen_height):
+		waiting = True
+		winImage = pygame.image.load("images/level_completed.jpg").convert()
+		winImage = pygame.transform.scale(winImage, (200,200))
+		winRect = winImage.get_rect()
+		winRect.center = (screen_width/2,screen_height/2)
+		text1, text2 = Text(self.screen),Text(self.screen)
+		text1.draw_text(self.screen, "CONGRATULATIONS" , 64, self.screen_width/2, self.screen_height/4, color=(135, 178, 204))
+		text2.draw_text(self.screen, "Press a key to ...will see", 24, self.screen_width/2, self.screen_height*3/4, color=WHITE)
+		self.screen.blit(winImage,winRect)
+		pygame.display.flip()
+		while waiting:
+			clock.tick(FPS)
+			for event in pygame.event.get():
+				if event.type == pygame.QUIT:
+					pygame.quit()
+					quit()
+				if event.type == pygame.KEYDOWN:
+					waiting = False
+
+	def intro(self, screen_width, screen_height ):
+		logoImage = pygame.image.load("images/logo_PaPi.xcf").convert()
+		logoRect = logoImage.get_rect()
+		text1, text2, text3 = Text(self.screen), Text(self.screen), Text(self.screen)
+		text1.draw_text(self.screen, "Welcome in Blobs World" , 50, self.screen_width/2, self.screen_height/4, color=(135, 178, 204))
+		text2.draw_text(self.screen, "WORLD CODING STILL IN PROGRESS", 40, self.screen_width/2, self.screen_height*0.50, color=WHITE)
+		text3.draw_text(self.screen, "Press a key to begin", 30, self.screen_width/2, self.screen_height*0.75, color=WHITE)
+		self.screen.blit(logoImage,logoRect)
+		pygame.display.flip()
+		waiting = True
+		while waiting:
+			clock.tick(FPS)
+			for event in pygame.event.get():
+				if event.type == pygame.QUIT:
+					pygame.quit()
+					quit()
+				if event.type == pygame.KEYDOWN:
+					waiting = False
 
 class Text():
 	def __init__(self, screen):
