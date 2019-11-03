@@ -2,7 +2,7 @@
 
 import pygame
 import random
-from blob_class2 import PnjBlob, UserBlob, VoidHole, Collapsing
+from blob_class import PnjBlob, UserBlob, VoidHole, Collapsing
 from power_class import RedFlush, WhiteFlush, GreenFlush, BlueFlush
 from interface_class import Menus, Text
 
