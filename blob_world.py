@@ -2,7 +2,7 @@
 
 import pygame
 import random
-from blob_class import PnjBlob, UserBlob, VoidHole
+from blob_class import PnjBlob, UserBlob, VoidHole, Collapsing
 from power_class import RedFlush, WhiteFlush, GreenFlush, BlueFlush
 from interface_class import Menus, Text
 
@@ -38,95 +38,7 @@ STARTING_GREEN_BLOBS = 5
 
 #Standards
 size_decrease = 0
-FPS = 40
-
-
-def power_flush_contacts(player, blob_units):
-	power_units = player.power
-	for power_id, power in list(power_units.items()):#usefull when multi types power launched
-		for blob_id, blob in list(blob_units.items()):
-			if power_hit(power, blob, blob_id):
-				if power.color in [BLUE, GREEN, RED]:
-					idx_p = power.color.index(255)
-					new_color = list(blob.color)
-					if new_color[idx_p]==255:
-						blob.move_x = -blob.move_x
-						blob.move_y = -blob.move_y
-					else: new_color[idx_p]=255
-					blob.color = tuple(new_color)
-				elif power.color == WHITE:
-					print('r')
-
-
-def power_hit(power, unit_collapsed, unit_collapsed_id):
-	#if distance between the 2 center is == to radius sum
-	if np.sqrt((power.x-unit_collapsed.x)**2+(power.y-unit_collapsed.y)**2) <= (power.size+unit_collapsed.size):
-		if unit_collapsed_id in power.blob_touched:
-			return False
-		else:
-			power.blob_touched.append(unit_collapsed_id)
-			return True
-
-def blob_touching(b1, b2):
-	return np.linalg.norm(np.array([b1.x, b1.y])-np.array([b2.x, b2.y])) < (b1.size + b2.size)
-
-def vitesse_transfer(b1,b2):#imaginary
-	b1_vvit = np.sqrt(b1.move_x**2+b1.move_y**2)*0.5*b1.size
-	b2_vvit = np.sqrt(b2.move_x**2+b2.move_y**2)*0.5*b2.size
-	new_move_x = b1.move_x*(b1_vvit/(b1_vvit+b2_vvit)) + b2.move_x*(b2_vvit/(b1_vvit+b2_vvit))
-	new_move_y = b1.move_y*(b1_vvit/(b1_vvit+b2_vvit)) + b2.move_y*(b2_vvit/(b1_vvit+b2_vvit))
-	return (-1 if -1>new_move_x<0 else int(new_move_x) or 1 -1 if 0<new_move_x<1 else int(new_move_x),
-	-1 if -1>new_move_y<0 else int(new_move_y) or 1 -1 if 0<new_move_y<1 else int(new_move_y))
-
-def collision_pnj_blob(blob_id, other_blob_id):
-	#size also used as weight
-	blob = blob_units[blob_id]
-	other_blob = blob_units[other_blob_id]
-	new_color = ()
-	for c1, c2 in zip(blob.color, other_blob.color):
-		coeff_c1 = blob.size/(blob.size + other_blob.size)
-		coeff_c2 = other_blob.size/(blob.size + other_blob.size)
-		i = np.round((c1*coeff_c1 + c2*coeff_c2), 3)
-		new_color = new_color+(i,)
-	if blob.size > other_blob.size:
-		blob.size += other_blob.size
-		blob.color = new_color
-		blob.move_x, blob.move_y = vitesse_transfer(blob, other_blob)
-		del(blob_units[other_blob_id])
-	elif blob.size < other_blob.size:
-		other_blob.size += blob.size
-		other_blob.color = new_color
-		other_blob.move_x, other_blob.move_y = vitesse_transfer(blob, other_blob)
-		del(blob_units[blob_id])
-
-
-def handle_user_collisions(player_blob, blob_units):
-	for pnj_blob_id, pnj_blob in list(blob_units.items()):
-		if blob_touching(player_blob, pnj_blob):
-			if player_blob.size >= pnj_blob.size:
-				player_blob.size += pnj_blob.size
-				del blob_units[pnj_blob_id]
-			elif player_blob.size < pnj_blob.size:
-				player_blob.size = 0
-				player_blob.alive = False
-	return(player_blob, blob_units)
-
-
-def handle_pnj_collisions(blob_dict):
-	for blob_id, blob in list(blob_dict.items()):
-		try:
-			for other_blob_id, other_blob in list(blob_dict.items()):
-				if blob_id == other_blob_id:
-					pass
-				else:
-					if blob.size != other_blob.size: 
-						if blob_touching(blob, other_blob):
-							collision_pnj_blob(blob_id, other_blob_id)
-					else:
-						pass
-		except:
-			pass
-	return blob_dict
+FPS = 30
 
 def handle_keyboard(event):
 	global user_pressing_left, user_pressing_right, user_pressing_up, user_pressing_down
@@ -151,31 +63,107 @@ def handle_keyboard(event):
 		elif event.key == pygame.K_DOWN:
 			user_pressing_down = False
 
-	#return user_pressing_left, press_right, press_down, press_up
+def power_flush_contacts(player, blob_units):
+	power_units = player.power
+	for power_id, power in list(power_units.items()):#usefull when multi types power launched
+		for blob_id, blob in list(blob_units.items()):
+			if power_hit(power, blob, blob_id):
+				if power.color in [BLUE, GREEN, RED]:
+					idx_p = power.color.index(255)
+					new_color = list(blob.color)
+					if new_color[idx_p]==255:
+						blob.move_x = -blob.move_x
+						blob.move_y = -blob.move_y
+					else: new_color[idx_p]=255
+					blob.color = tuple(new_color)
+				elif power.color == WHITE:
+					print('r')
+
+def power_hit(power, unit_collapsed, unit_collapsed_id):
+	#if distance between the 2 center is == to radius sum
+	if np.sqrt((power.x-unit_collapsed.x)**2+(power.y-unit_collapsed.y)**2) <= (power.size+unit_collapsed.size):
+		if unit_collapsed_id in power.blob_touched:
+			return False
+		else:
+			power.blob_touched.append(unit_collapsed_id)
+			return True
+
+def blob_touching(b1, b2):
+	return np.linalg.norm(np.array([b1.x, b1.y])-np.array([b2.x, b2.y])) < (b1.size + b2.size)
+
+
+def handle_user_collisions(player_blob, blob_units):
+	for pnj_blob_id, pnj_blob in list(blob_units.items()):
+		if blob_touching(player_blob, pnj_blob):
+			if player_blob.size >= pnj_blob.size:
+				player_blob.size += pnj_blob.size
+				player_blob.mass += pnj_blob.mass
+				del blob_units[pnj_blob_id]
+			elif player_blob.size < pnj_blob.size:
+				player_blob.size = 0
+				player_blob.alive = False
+	return(player_blob, blob_units)
+
+
+def handle_pnj_collisions(blob_id, blob_units):
+	for other_blob_id in blob_units.copy():
+		if blob_id == other_blob_id:
+			pass
+		else:
+			try:
+				if blob_touching(blob_units[blob_id], blob_units[other_blob_id]):
+					Collapsing(blob_id, other_blob_id,blob_units)
+			except: pass
+	#return blob_units
 
 def displaying_units(player, blob_units, void_units, _whity_units):
-	for blob_id in blob_units:
-		blob = blob_units[blob_id]
-		pygame.draw.circle(screen, blob.color, [
-						   blob.x, blob.y], int(round(blob.size)))
+	#Player and blob movement
+	for blob_id in list(blob_units.copy()):
+		try:
+			blob = blob_units[blob_id]
+			blob.move()
+			handle_pnj_collisions(blob_id, blob_units)
+			pygame.draw.circle(screen, blob.color, [
+								blob.x, blob.y], int(round(blob.size)))
+		except KeyError: pass #cause iterating on a changing size dict
+	player, blob_units = handle_user_collisions(player, blob_units)
 
-	for void_id in void_units:
-		void = void_units[void_id]
-		pygame.draw.circle(screen, void.color, [
-						   void.x, void.y], int(round(void.size)))
-
-	for power_id, power in list(player.power.items()):#dict to list cause might be modified during iteration
+	#powers
+	for power_id, power in list(player.power.items()):#dict to list to handle the length change during iteration
 		power.update()
 		power_flush_contacts(player, blob_units)
-		pygame.draw.circle(screen, power.color, (power.x, power.y), int(round(power.size)), 1)
 		if power.size >= power.initial_size*2 and power.size >= 50:
 			del player.power[power_id]
+
+	#whity blobs and void
+	for void_id in void_units:
+		void = void_units[void_id]
+		void.move()
+		if blob_units :
+			for id in blob_units:
+				void.gravity_modif(blob_units[id])
+		if player: void.gravity_modif(player)
+		pygame.draw.circle(screen, void.color, [
+				void.x, void.y], int(round(void.size)))
+
+	if mainloop_count % 100 == 0 and len(_whity_units)<=10:
+		for void_id, void in list(void_units.items()):
+			_whity_units['whity_{}_{}'.format(void, mainloop_count)] = void.creating(WIDTH,HEIGHT)
+	if _whity_units:
+		for _whity_id, _whity in list(_whity_units.items()):
+			_whity.move()
+			pygame.draw.circle(screen, _whity.color, (_whity.x, _whity.y), int(round(_whity.size)), 1)
 	
-	for _whity_id, _whity in list(_whity_units.items()):
-		pygame.draw.circle(screen, _whity.color, (_whity.x, _whity.y), int(round(_whity.size)), 1)
+	if player1.size >= size_decrease:
+		player1.size -= size_decrease
+	elif player1.size < size_decrease:
+		player1.alive = False
+	if not player1.alive:
+		global game_over
+		game_over = True
 
 	pygame.draw.circle(screen, player.color, [
-					   player.x, player.y], int(round(player.size)))
+					player.x, player.y], int(round(player.size)))
 
 
 #CREATE Player and Pnjs
@@ -210,17 +198,16 @@ user_pressing_down=bool()
 game_over = False
 start = True
 running = True
-
 player1, blob_units, void_units, mainloop_count, power_units, _whity_units = create_characs()
 while running:
 	if start:
 		menu = Menus(screen, WIDTH, HEIGHT)
 		menu.intro(WIDTH, HEIGHT)
-		start=False
+		start = False
 	if game_over:
 		menu = Menus(screen, WIDTH, HEIGHT)
 		menu.gameover(WIDTH, HEIGHT)
-		game_over=False
+		game_over = False
 		#RECREATE Fundamental elements
 		player1, blob_units, void_units, mainloop_count, power_units, _whity_units = create_characs()
 		power_units = dict()
@@ -232,7 +219,7 @@ while running:
 		user_pressing_down=bool()
 	
 	clock.tick(FPS)##keep loop running at 40 FPS
-	
+	#KEYBOARD EVENTS
 	for event in pygame.event.get():
 		if event.type == pygame.QUIT:
 			running = False
@@ -256,38 +243,6 @@ while running:
 		player1.user_move(direction = 'move_up')
 	if user_pressing_down:
 		player1.user_move(direction = 'move_down')
-	
-	#Player and blob boundaries movement
-	player1.check_boundaries()
-	for blob_id in blob_units:
-		blob_units[blob_id].move()
-		blob_units[blob_id].check_boundaries()
-	for void_id in void_units:
-		void_units[void_id].move()
-		void_units[void_id].check_boundaries()
-
-	#whity blobs
-	if mainloop_count % 100 == 0 and len(_whity_units)<=10:
-		for void_id, void in list(void_units.items()):
-			_whity_units['whity_{}_{}'.format(void, mainloop_count)] = void.creating(WIDTH,HEIGHT)
-	if _whity_units:
-		for _whity_id, _whity in list(_whity_units.items()):
-			_whity.move()
-			_whity.check_boundaries()
-
-	##collisions
-	blob_units = handle_pnj_collisions(blob_units)
-	player1, blob_units = handle_user_collisions(player1, blob_units)
-	if not blob_units:
-		menu = Menus(screen, WIDTH, HEIGHT)
-		menu.win_menu(WIDTH, HEIGHT)
-	
-	if player1.size >= size_decrease:
-		player1.size -= size_decrease
-	elif player1.size < size_decrease:
-		player1.alive = False
-	if not player1.alive:
-		game_over=True
 
 	screen.fill(BLACK)
 	displaying_units(player1, blob_units, void_units, _whity_units)

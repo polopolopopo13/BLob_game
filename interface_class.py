@@ -1,6 +1,6 @@
 import pygame
 
-FPS = 40
+FPS = 5
 #Colors
 WHITE = (255, 255, 255)
 BLUE = (0, 0, 255)

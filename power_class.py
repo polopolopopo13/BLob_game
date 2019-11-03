@@ -21,6 +21,7 @@ class Flush():
 
 	def update(self):
 		self.size += 1
+		self.to_display(self.screen)
 	
 	def to_display(self, screen):
 		pygame.draw.circle(screen, self.color, (self.x, self.y), self.size, 2)
