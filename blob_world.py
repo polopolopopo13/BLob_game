@@ -2,7 +2,7 @@
 
 import pygame
 import random
-from blob_class import PnjBlob, UserBlob, VoidHole, Collapsing
+from blob_class2 import PnjBlob, UserBlob, VoidHole, Collapsing
 from power_class import RedFlush, WhiteFlush, GreenFlush, BlueFlush
 from interface_class import Menus, Text
 
@@ -63,34 +63,8 @@ def handle_keyboard(event):
 		elif event.key == pygame.K_DOWN:
 			user_pressing_down = False
 
-def power_flush_contacts(player, blob_units):
-	power_units = player.power
-	for power_id, power in list(power_units.items()):#usefull when multi types power launched
-		for blob_id, blob in list(blob_units.items()):
-			if power_hit(power, blob, blob_id):
-				if power.color in [BLUE, GREEN, RED]:
-					idx_p = power.color.index(255)
-					new_color = list(blob.color)
-					if new_color[idx_p]==255:
-						blob.move_x = -blob.move_x
-						blob.move_y = -blob.move_y
-					else: new_color[idx_p]=255
-					blob.color = tuple(new_color)
-				elif power.color == WHITE:
-					print('r')
-
-def power_hit(power, unit_collapsed, unit_collapsed_id):
-	#if distance between the 2 center is == to radius sum
-	if np.sqrt((power.x-unit_collapsed.x)**2+(power.y-unit_collapsed.y)**2) <= (power.size+unit_collapsed.size):
-		if unit_collapsed_id in power.blob_touched:
-			return False
-		else:
-			power.blob_touched.append(unit_collapsed_id)
-			return True
-
 def blob_touching(b1, b2):
 	return np.linalg.norm(np.array([b1.x, b1.y])-np.array([b2.x, b2.y])) < (b1.size + b2.size)
-
 
 def handle_user_collisions(player_blob, blob_units):
 	for pnj_blob_id, pnj_blob in list(blob_units.items()):
@@ -130,8 +104,7 @@ def displaying_units(player, blob_units, void_units, _whity_units):
 
 	#powers
 	for power_id, power in list(player.power.items()):#dict to list to handle the length change during iteration
-		power.update()
-		power_flush_contacts(player, blob_units)
+		power.update(blob_units)
 		if power.size >= power.initial_size*2 and power.size >= 50:
 			del player.power[power_id]
 

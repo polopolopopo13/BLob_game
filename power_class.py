@@ -1,5 +1,5 @@
 import pygame
-
+import numpy as np
 #Colors
 WHITE = (255, 255, 255)
 BLUE = (0, 0, 255)
@@ -19,8 +19,35 @@ class Flush():
 		self.initial_size = player_size
 		self.blob_touched = []
 
-	def update(self):
+	def power_hit(self, unit_id, units):
+		unit = units[unit_id]
+		#if distance between the 2 center is == to radius sum
+		if np.sqrt((self.x-unit.x)**2+(self.y-unit.y)**2) <= (self.size+unit.size):
+			if unit_id in self.blob_touched:
+				return
+			else:
+				self.blob_touched.append(unit_id)
+				self.power_flush_contacts(unit_id, units)
+
+	def power_flush_contacts(self, unit_id, units):
+		unit = units[unit_id]
+		if self.color in [BLUE, GREEN, RED]:
+			idx_p = self.color.index(255)
+			new_color = list(unit.color)
+			if new_color[idx_p]==255:
+				unit.move_x = -unit.move_x
+				unit.move_y = -unit.move_y
+			else: new_color[idx_p]=255
+			unit.color = tuple(new_color)
+		elif self.color == WHITE:
+			print('r')
+
+
+	def update(self, pnjblob_units):
 		self.size += 1
+		#self.units = pnjblob_units
+		for pnj_id in pnjblob_units:
+			self.power_hit(pnj_id, pnjblob_units)
 		self.to_display(self.screen)
 	
 	def to_display(self, screen):
