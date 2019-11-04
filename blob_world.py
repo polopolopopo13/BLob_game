@@ -212,6 +212,7 @@ def game_on(restart = False):
 		if not blob_units:
 			menu = Menus(screen, WIDTH, HEIGHT)
 			menu.win_menu(WIDTH, HEIGHT)
+			game_on(restart=True)
 
 if __name__== '__main__':
 	game_on()
