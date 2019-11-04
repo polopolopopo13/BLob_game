@@ -61,10 +61,11 @@ class Menus():
 	def intro(self, screen_width, screen_height ):
 		logoImage = pygame.image.load("images/logo_PaPi.xcf").convert()
 		logoRect = logoImage.get_rect()
-		text1, text2, text3 = Text(self.screen), Text(self.screen), Text(self.screen)
+		text1, text2, text3, text4 = Text(self.screen), Text(self.screen), Text(self.screen), Text(self.screen)
 		text1.draw_text(self.screen, "Welcome in Blobs World" , 50, self.screen_width/2, self.screen_height/4, color=(135, 178, 204))
 		text2.draw_text(self.screen, "WORLD CODING STILL IN PROGRESS", 40, self.screen_width/2, self.screen_height*0.50, color=WHITE)
-		text3.draw_text(self.screen, "Press a key to begin", 30, self.screen_width/2, self.screen_height*0.75, color=WHITE)
+		text3.draw_text(self.screen, "Press 'space', 'v', 'b' or 'n' to use power", 30, self.screen_width/2, self.screen_height*0.66, color=WHITE)
+		text4.draw_text(self.screen, "Press a key to begin", 30, self.screen_width/2, self.screen_height*0.75, color=WHITE)
 		self.screen.blit(logoImage,logoRect)
 		pygame.display.flip()
 		waiting = True

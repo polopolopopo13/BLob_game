@@ -2,7 +2,7 @@
 
 import pygame
 import random
-from blob_class import PnjBlob, UserBlob, VoidHole, Collapsing
+from blob_class import PnjBlob, UserBlob, VoidHole, Pnj_Bolb_Collapsing
 from power_class import RedFlush, WhiteFlush, GreenFlush, BlueFlush
 from interface_class import Menus, Text
 
@@ -78,25 +78,13 @@ def handle_user_collisions(player_blob, blob_units):
 				player_blob.alive = False
 	return(player_blob, blob_units)
 
-
-def handle_pnj_collisions(blob_id, blob_units):
-	for other_blob_id in blob_units.copy():
-		if blob_id == other_blob_id:
-			pass
-		else:
-			try:
-				if blob_touching(blob_units[blob_id], blob_units[other_blob_id]):
-					Collapsing(blob_id, other_blob_id,blob_units)
-			except: pass
-	#return blob_units
-
 def displaying_units(player, blob_units, void_units, _whity_units):
 	#Player and blob movement
 	for blob_id in list(blob_units.copy()):
 		try:
 			blob = blob_units[blob_id]
 			blob.move()
-			handle_pnj_collisions(blob_id, blob_units)
+			Pnj_Bolb_Collapsing(blob_id, blob_units)
 			pygame.draw.circle(screen, blob.color, [
 								blob.x, blob.y], int(round(blob.size)))
 		except KeyError: pass #cause iterating on a changing size dict
@@ -126,14 +114,6 @@ def displaying_units(player, blob_units, void_units, _whity_units):
 		for _whity_id, _whity in list(_whity_units.items()):
 			_whity.move()
 			pygame.draw.circle(screen, _whity.color, (_whity.x, _whity.y), int(round(_whity.size)), 1)
-	
-	if player1.size >= size_decrease:
-		player1.size -= size_decrease
-	elif player1.size < size_decrease:
-		player1.alive = False
-	if not player1.alive:
-		global game_over
-		game_over = True
 
 	pygame.draw.circle(screen, player.color, [
 					player.x, player.y], int(round(player.size)))
@@ -162,62 +142,76 @@ def create_characs():
 	return player1, blob_units, void_units, mainloop_count, power_units, _whity_units
 
 
-user_pressing_left=bool()
-user_pressing_right=bool()
-user_pressing_up=bool()
-user_pressing_down=bool()
+def game_on(restart = False):
+	global user_pressing_left
+	global user_pressing_right
+	global user_pressing_up
+	global user_pressing_down
+	user_pressing_left=bool()
+	user_pressing_right=bool()
+	user_pressing_up=bool()
+	user_pressing_down=bool()
 
-## MAIN LOOP
-game_over = False
-start = True
-running = True
-player1, blob_units, void_units, mainloop_count, power_units, _whity_units = create_characs()
-while running:
-	if start:
-		menu = Menus(screen, WIDTH, HEIGHT)
-		menu.intro(WIDTH, HEIGHT)
+	## MAIN LOOP
+	global game_over, start, running
+	game_over = False
+
+	if restart:
 		start = False
-	if game_over:
-		menu = Menus(screen, WIDTH, HEIGHT)
-		menu.gameover(WIDTH, HEIGHT)
-		game_over = False
-		#RECREATE Fundamental elements
-		player1, blob_units, void_units, mainloop_count, power_units, _whity_units = create_characs()
-		power_units = dict()
-		_whity_units = dict()
+	else: start = True
 
-		user_pressing_left=bool()
-		user_pressing_right=bool()
-		user_pressing_up=bool()
-		user_pressing_down=bool()
-	
-	clock.tick(FPS)##keep loop running at 40 FPS
-	#KEYBOARD EVENTS
-	for event in pygame.event.get():
-		if event.type == pygame.QUIT:
-			running = False
-		elif event.type == pygame.KEYUP:
-			if event.key == pygame.K_SPACE:
-				player1.power[f'flushwhite_{time.time()}'] = WhiteFlush(screen, player1.x, player1.y, player1.size)
-			elif event.key == pygame.K_v:
-				player1.power[f'flushred_{time.time()}'] = RedFlush(screen, player1.x, player1.y, player1.size)
-			elif event.key == pygame.K_b:
-				player1.power[f'flushgreen_{time.time()}'] = GreenFlush(screen, player1.x, player1.y, player1.size)
-			elif event.key == pygame.K_n:
-				player1.power[f'flushblue_{time.time()}'] = BlueFlush(screen, player1.x, player1.y, player1.size)
-			else: handle_keyboard(event)
-		elif event.type == pygame.KEYDOWN: handle_keyboard(event)
+	running = True
+	global player1, blob_units, void_units, mainloop_count, power_units, _whity_units
+	player1, blob_units, void_units, mainloop_count, power_units, _whity_units = create_characs()
+	while running:
+		if start:
+			menu = Menus(screen, WIDTH, HEIGHT)
+			menu.intro(WIDTH, HEIGHT)
+			start = False
+		if game_over:
+			menu = Menus(screen, WIDTH, HEIGHT)
+			menu.gameover(WIDTH, HEIGHT)
+			game_over = False
+			game_on(restart=True)
+		clock.tick(FPS)##keep loop running at 40 FPS
+		#KEYBOARD EVENTS
+		for event in pygame.event.get():
+			if event.type == pygame.QUIT:
+				running = False
+			elif event.type == pygame.KEYUP:
+				if event.key == pygame.K_SPACE:
+					player1.power[f'flushwhite_{time.time()}'] = WhiteFlush(screen, player1.x, player1.y, player1.size)
+				elif event.key == pygame.K_v:
+					player1.power[f'flushred_{time.time()}'] = RedFlush(screen, player1.x, player1.y, player1.size)
+				elif event.key == pygame.K_b:
+					player1.power[f'flushgreen_{time.time()}'] = GreenFlush(screen, player1.x, player1.y, player1.size)
+				elif event.key == pygame.K_n:
+					player1.power[f'flushblue_{time.time()}'] = BlueFlush(screen, player1.x, player1.y, player1.size)
+				else: handle_keyboard(event)
+			elif event.type == pygame.KEYDOWN: handle_keyboard(event)
 
-	if user_pressing_left:
-		player1.user_move(direction = 'move_left')
-	if user_pressing_right:
-		player1.user_move(direction = 'move_right')
-	if user_pressing_up:
-		player1.user_move(direction = 'move_up')
-	if user_pressing_down:
-		player1.user_move(direction = 'move_down')
+		if user_pressing_left:
+			player1.user_move(direction = 'move_left')
+		if user_pressing_right:
+			player1.user_move(direction = 'move_right')
+		if user_pressing_up:
+			player1.user_move(direction = 'move_up')
+		if user_pressing_down:
+			player1.user_move(direction = 'move_down')
 
-	screen.fill(BLACK)
-	displaying_units(player1, blob_units, void_units, _whity_units)
-	mainloop_count += 1	
-	pygame.display.update()
+		screen.fill(BLACK)
+		displaying_units(player1, blob_units, void_units, _whity_units)
+		mainloop_count += 1	
+		pygame.display.update()
+		if player1.size >= size_decrease:
+			player1.size -= size_decrease
+		elif player1.size < size_decrease:
+			player1.alive = False
+		if not player1.alive:
+			game_over = True
+		if not blob_units:
+			menu = Menus(screen, WIDTH, HEIGHT)
+			menu.win_menu(WIDTH, HEIGHT)
+
+if __name__== '__main__':
+	game_on()

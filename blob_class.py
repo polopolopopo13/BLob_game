@@ -10,13 +10,34 @@ size = WIDTH, HEIGHT
 screen = pygame.display.set_mode(size)
 G = 6.674#*10e-11
 
+def blob_touching(b1, b2):
+	return np.linalg.norm(np.array([b1.x, b1.y])-np.array([b2.x, b2.y])) < (b1.size + b2.size)
 
-class Collapsing():
-	def __init__(self, id1, id2, dict_unit):
-		self.u1 = dict_unit[id1]
-		self.u2 = dict_unit[id2]
-		self.update(id1, id2, dict_unit)
+def handle_pnj_collisions(blob_id, blob_units):
+	for other_blob_id in blob_units.copy():
+		if blob_id == other_blob_id:
+			pass
+		else:
+			try:
+				if blob_touching(blob_units[blob_id], blob_units[other_blob_id]):
+					Collapsing(blob_id, other_blob_id,blob_units)
+			except: pass
 
+class Pnj_Bolb_Collapsing():
+	def __init__(self, id1, blob_units):
+		self.u1 = blob_units[id1]
+		for id2 in blob_units.copy():
+			if id1 == id2: pass
+			else:
+				self.u2 = blob_units[id2]
+				try:
+					if self.blob_touching(self.u1, self.u2):
+						self.update(id1, id2, blob_units)
+				except: pass
+	
+	def blob_touching(self, b1, b2):
+		return np.linalg.norm(np.array([b1.x, b1.y])-np.array([b2.x, b2.y])) < (b1.size + b2.size)
+	
 	def update(self, id1, id2, dict_unit):
 		new_color = ()
 		if self.u1.size == self.u2.size: return
@@ -150,6 +171,9 @@ class UserBlob():
 		self.angle_x = math.pi/2
 		self.angle_y = 0
 		self.mass = 150
+	
+	def __str__(self):
+		return('Blob player by user. {self.color} color & {self.size} size')
 
 	def user_move(self, direction):
 		if direction == 'move_left':
